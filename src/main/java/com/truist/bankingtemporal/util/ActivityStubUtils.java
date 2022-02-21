@@ -11,9 +11,9 @@ import java.time.Duration;
 public class ActivityStubUtils {
     public static TransactionActivity getActivitiesStub() {
         return Workflow.newActivityStub(
-                TransactionActivityImpl.class,
+                TransactionActivity.class,
                 ActivityOptions.newBuilder()
-                        .setScheduleToCloseTimeout(Duration.ofSeconds(60)) // retry timeout
+                        .setScheduleToCloseTimeout(Duration.ofSeconds(30)) // retry timeout
                         .setRetryOptions(RetryOptions.newBuilder()
                                 .setBackoffCoefficient(1)
                                 .build())
