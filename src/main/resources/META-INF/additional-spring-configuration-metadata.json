@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "temporal.server.host",
+      "type": "java.lang.String",
+      "description": "Description for temporal.server.host."
+    }
+  ] }
