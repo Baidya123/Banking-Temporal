@@ -13,7 +13,7 @@ public class ActivityStubUtils {
         return Workflow.newActivityStub(
                 TransactionActivity.class,
                 ActivityOptions.newBuilder()
-                        .setScheduleToCloseTimeout(Duration.ofSeconds(30)) // retry timeout
+                        .setScheduleToCloseTimeout(Duration.ofSeconds(60)) // retry timeout
                         .setRetryOptions(RetryOptions.newBuilder()
                                 .setBackoffCoefficient(1)
                                 .build())
