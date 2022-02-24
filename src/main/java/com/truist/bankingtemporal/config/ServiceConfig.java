@@ -6,7 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties("my.service.url")
+@ConfigurationProperties("truist.service-url")
 @Getter @Setter
 public class ServiceConfig {
     private String debit;
