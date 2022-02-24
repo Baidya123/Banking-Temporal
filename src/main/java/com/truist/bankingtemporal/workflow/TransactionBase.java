@@ -1,11 +1,14 @@
 package com.truist.bankingtemporal.workflow;
 
-public interface TransactionBase {
-    void initDebit(Object transactionRequest);
+import com.truist.bankingtemporal.model.BalanceRequest;
+import com.truist.bankingtemporal.model.ServiceRequest;
 
-    void initCredit(Object transactionRequest);
+public interface TransactionBase {
+    void initDebit(ServiceRequest debitRequest);
+
+    void initCredit(ServiceRequest creditRequest);
 
     void notifyRecipients(Object transactionRequest);
 
-    Object fetchBalance(Object transactionRequest);
+    Object fetchBalance(BalanceRequest balanceRequest);
 }

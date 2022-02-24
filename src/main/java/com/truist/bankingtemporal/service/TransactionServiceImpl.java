@@ -1,23 +1,39 @@
 package com.truist.bankingtemporal.service;
 
+import com.truist.bankingtemporal.config.ServiceConfig;
+import com.truist.bankingtemporal.model.BalanceRequest;
+import com.truist.bankingtemporal.model.ServiceRequest;
+import com.truist.bankingtemporal.model.response.CreditResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.concurrent.CompletableFuture;
 
 @Service
-@Slf4j
+@Slf4j @RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
+
+    private final ServiceConfig serviceConfig;
+    private final RestTemplate restTemplate;
+
     @Override
-    public boolean processDebit(Object transactionRequest) {
+    public boolean processDebit(ServiceRequest debitRequest) {
         log.debug("Debit Successful from sender's account");
-        return new CompletableFuture<>().complete(true);
+        return true;
     }
 
     @Override
-    public boolean processCredit(Object transactionRequest) {
+    public boolean processCredit(ServiceRequest creditRequest) {
+
+        CreditResponse response = (CreditResponse) requestAndGetData(serviceConfig.getCredit(), creditRequest, CreditResponse.class);
+        log.debug(response.toString());
         log.debug("Credit Successful to receiver's account");
-        return new CompletableFuture<>().complete(true);
+
+        return true;
     }
 
     @Override
@@ -27,7 +43,12 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public CompletableFuture<Object> fetchBalance(Object transactionRequest) {
+    public CompletableFuture<Object> fetchBalance(BalanceRequest balanceRequest) {
         return new CompletableFuture<>();
+    }
+
+    private Object requestAndGetData(String url, ServiceRequest creditRequest, Class<?> responseClass) {
+        HttpEntity<ServiceRequest> httpEntity = new HttpEntity<>(creditRequest);
+        return restTemplate.exchange(url, HttpMethod.POST, httpEntity, responseClass).getBody();
     }
 }

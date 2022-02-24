@@ -1,10 +1,15 @@
 package com.truist.bankingtemporal.workflow;
 
+import com.truist.bankingtemporal.model.BalanceRequest;
+import com.truist.bankingtemporal.model.ServiceRequest;
 import com.truist.bankingtemporal.service.TransactionService;
-import com.truist.bankingtemporal.service.TransactionServiceImpl;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
+@Component
 @Slf4j
+@RequiredArgsConstructor
 public class TransactionActivityImpl implements TransactionActivity {
 
     private static final String DEBIT_STATUS = "debiting sender account";
@@ -12,18 +17,17 @@ public class TransactionActivityImpl implements TransactionActivity {
     private static final String NOTIFY_STATUS = "notifying all";
     private static final String BALANCE_STATUS = "finishing and fetching balance";
 
-    private final TransactionService transactionService = new TransactionServiceImpl();
-
+    private final TransactionService transactionService;
     @Override
-    public boolean debitAccount(Object transactionRequest) {
+    public boolean debitAccount(ServiceRequest debitRequest) {
         log.debug(DEBIT_STATUS);
-        return transactionService.processDebit(transactionRequest);
+        return transactionService.processDebit(debitRequest);
     }
 
     @Override
-    public boolean creditAccount(Object transactionRequest) {
+    public boolean creditAccount(ServiceRequest creditRequest) {
         log.debug(CREDIT_STATUS);
-        return transactionService.processCredit(transactionRequest);
+        return transactionService.processCredit(creditRequest);
     }
 
     @Override
@@ -34,9 +38,9 @@ public class TransactionActivityImpl implements TransactionActivity {
     }
 
     @Override
-    public boolean fetchBalance(Object transactionRequest) {
+    public boolean fetchBalance(BalanceRequest balanceRequest) {
         log.debug(BALANCE_STATUS);
-        transactionService.fetchBalance(transactionRequest).complete(true);
+        transactionService.fetchBalance(balanceRequest).complete(true);
         return true;
     }
 }
