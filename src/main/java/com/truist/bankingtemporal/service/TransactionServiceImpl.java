@@ -24,6 +24,7 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public boolean processDebit(ServiceRequest debitRequest) {
+    	//System.out.println("Debit call started");
     	DebitResponse response = (DebitResponse) requestAndGetData(serviceConfig.getDebit(), debitRequest, DebitResponse.class);
         log.debug(response.toString());
         boolean flag = false;

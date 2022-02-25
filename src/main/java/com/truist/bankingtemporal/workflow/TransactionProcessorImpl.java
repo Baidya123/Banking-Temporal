@@ -69,8 +69,8 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 
     private ServiceRequest createDebitRequestObj(TransferRequest transferRequest) {
         return ServiceRequest.builder()
-                .sourceAccountNumber(transferRequest.getDebitAccount().getAccountNumber())
-                .destinationAccountNumber(transferRequest.getCreditAccount().getAccountNumber())
+                .sourceAccountNumber(transferRequest.getCreditAccount().getAccountNumber())
+                .destinationAccountNumber(transferRequest.getDebitAccount().getAccountNumber())
                 .amount(transferRequest.getPayment().getAmount())
                 .build();
     }
