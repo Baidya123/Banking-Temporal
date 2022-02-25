@@ -74,7 +74,7 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
     private BalanceRequest createBalanceRequestObj(TransferRequest transferRequest) {
         BalanceRequest balanceRequest = new BalanceRequest();
         balanceRequest.setAccountNumbers(
-                new ArrayList<>(2){{
+                new ArrayList(2){{
                     add(transferRequest.getDebitAccount().getAccountNumber());
                     add(transferRequest.getCreditAccount().getAccountNumber());
                 }}

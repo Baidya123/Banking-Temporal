@@ -15,7 +15,7 @@
     <name>Banking-Temporal</name>
     <description>Banking-Temporal</description>
     <properties>
-        <java.version>11</java.version>
+        <java.version>8</java.version>
         <version.temporal.sdk>1.7.1</version.temporal.sdk>
     </properties>
     <dependencies>

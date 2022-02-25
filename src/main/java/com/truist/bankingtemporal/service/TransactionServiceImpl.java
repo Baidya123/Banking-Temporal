@@ -4,6 +4,8 @@ import com.truist.bankingtemporal.config.ServiceConfig;
 import com.truist.bankingtemporal.model.BalanceRequest;
 import com.truist.bankingtemporal.model.ServiceRequest;
 import com.truist.bankingtemporal.model.response.CreditResponse;
+import com.truist.bankingtemporal.model.response.DebitResponse;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -22,8 +24,14 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public boolean processDebit(ServiceRequest debitRequest) {
+    	DebitResponse response = (DebitResponse) requestAndGetData(serviceConfig.getDebit(), debitRequest, DebitResponse.class);
+        log.debug(response.toString());
+        boolean flag = false;
+        if(response.getMessage().equals("Success")) {
+        	flag=true;
+        }
         log.debug("Debit Successful from sender's account");
-        return true;
+        return flag;
     }
 
     @Override
