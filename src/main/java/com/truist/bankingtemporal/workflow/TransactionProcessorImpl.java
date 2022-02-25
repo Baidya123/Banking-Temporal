@@ -22,6 +22,10 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
         // 1. debit sender
         initDebit(serviceRequest); // await response
 
+        long tmp = serviceRequest.getSourceAccountNumber();
+        serviceRequest.setSourceAccountNumber(serviceRequest.getDestinationAccountNumber());
+        serviceRequest.setDestinationAccountNumber(tmp);
+
         // 2. credit receiver
         initCredit(serviceRequest); // await response
 
