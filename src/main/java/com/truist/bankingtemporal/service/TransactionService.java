@@ -8,6 +8,6 @@ import java.util.concurrent.CompletableFuture;
 public interface TransactionService {
     boolean processDebit(ServiceRequest debitRequest);
     boolean processCredit(ServiceRequest creditRequest);
-    void notifyAll(Object transactionRequest);
+    void notifyAll(ServiceRequest transactionRequest);
     CompletableFuture<Object> fetchBalance(BalanceRequest balanceRequest);
 }

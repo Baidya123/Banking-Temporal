@@ -31,7 +31,7 @@ public class TransactionActivityImpl implements TransactionActivity {
     }
 
     @Override
-    public boolean notifyAccounts(Object transactionRequest) {
+    public boolean notifyAccounts(ServiceRequest transactionRequest) {
         log.debug(NOTIFY_STATUS);
         transactionService.notifyAll(transactionRequest);
         return true;

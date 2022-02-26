@@ -30,7 +30,7 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
         initCredit(serviceRequest); // await response
 
         // 3. send notifications
-        notifyRecipients(transferRequest); // pick email ids from DB
+        notifyRecipients(serviceRequest); // pick email ids from DB
 
         // 4. fetch balance of both sender & receiver
         Object response = fetchBalance(createBalanceRequestObj(transferRequest)); // await response
@@ -57,7 +57,7 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
     }
 
     @Override
-    public void notifyRecipients(Object transactionRequest) {
+    public void notifyRecipients(ServiceRequest transactionRequest) {
         Workflow.await(() -> transactionActivity.notifyAccounts(transactionRequest));
     }
 

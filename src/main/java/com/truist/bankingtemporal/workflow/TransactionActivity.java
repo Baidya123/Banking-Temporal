@@ -9,6 +9,6 @@ import io.temporal.activity.ActivityInterface;
 public interface TransactionActivity {
     boolean debitAccount(ServiceRequest debitRequest);
     boolean creditAccount(ServiceRequest creditRequest);
-    boolean notifyAccounts(Object transactionRequest);
+    boolean notifyAccounts(ServiceRequest transactionRequest);
     boolean fetchBalance(BalanceRequest balanceRequest);
 }

@@ -8,7 +8,7 @@ public interface TransactionBase {
 
     void initCredit(ServiceRequest creditRequest);
 
-    void notifyRecipients(Object transactionRequest);
+    void notifyRecipients(ServiceRequest transactionRequest);
 
     Object fetchBalance(BalanceRequest balanceRequest);
 }
