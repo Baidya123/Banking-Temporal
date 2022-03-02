@@ -13,4 +13,5 @@ public class ServiceConfig {
     private String credit;
     private String notify;
     private String balance;
+    private String rollback;
 }

@@ -1,16 +1,7 @@
 package com.truist.bankingtemporal.service;
 
-import com.truist.bankingtemporal.config.ServiceConfig;
-import com.truist.bankingtemporal.model.BalanceRequest;
-import com.truist.bankingtemporal.model.ServiceRequest;
-import com.truist.bankingtemporal.model.response.AccountBalanceResponse;
-import com.truist.bankingtemporal.model.response.CreditResponse;
-import com.truist.bankingtemporal.model.response.DebitResponse;
-import com.truist.bankingtemporal.model.response.StandardJsonResponse;
-import com.truist.bankingtemporal.model.response.StandardJsonResponseImpl;
+import java.util.concurrent.CompletableFuture;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -18,7 +9,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.concurrent.CompletableFuture;
+import com.truist.bankingtemporal.config.ServiceConfig;
+import com.truist.bankingtemporal.model.BalanceRequest;
+import com.truist.bankingtemporal.model.ServiceRequest;
+import com.truist.bankingtemporal.model.response.CreditResponse;
+import com.truist.bankingtemporal.model.response.DebitResponse;
+
+import io.temporal.workflow.Functions.Proc;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @Slf4j @RequiredArgsConstructor
@@ -86,4 +85,17 @@ public class TransactionServiceImpl implements TransactionService {
         return result;
         //return restTemplate.exchange(url, HttpMethod.GET, responseClass).getBody();
     }
+
+	@Override
+	public boolean processDebitRollback(ServiceRequest debitRequest) {
+		DebitResponse response = (DebitResponse) postRequestAndGetData(serviceConfig.getRollback(), debitRequest, DebitResponse.class);
+        log.debug(response.toString());
+        boolean flag = false;
+        if(response.getMessage().equals("Success")) {
+        	flag=true;
+        }
+        log.debug("Debited Amount is Successfully rollbacked to sender's account");
+        
+        return flag;
+	}
 }
