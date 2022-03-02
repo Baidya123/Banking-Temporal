@@ -24,7 +24,7 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 
 		ServiceRequest serviceRequest = createDebitRequestObj(transferRequest);
 		ServiceRequest rollbackRequest = createDebitRequestObj(transferRequest);
-		
+
 		try {
 			// 1. debit sender
 			initDebit(serviceRequest); // await response
@@ -38,16 +38,20 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 			// 2. credit receiver
 			initCredit(serviceRequest); // await response
 
-			// 3. send notifications
-			// notifyRecipients(serviceRequest); // pick email ids from DB
-
-			// 4. fetch balance of both sender & receiver
-			Object response = fetchBalance(createBalanceRequestObj(transferRequest)); // await response
-
-			return response;
-			
 		} catch (ActivityFailure e) {
 			saga.compensate();
+			throw e;
+		}
+		try {
+		// 3. send notifications
+		notifyRecipients(serviceRequest); // pick email ids from DB
+
+		// 4. fetch balance of both sender & receiver
+		Object response = fetchBalance(createBalanceRequestObj(transferRequest)); // await response
+
+		return response;
+		
+		} catch (ActivityFailure e) {
 			throw e;
 		}
 
@@ -67,8 +71,8 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 	public void initCredit(ServiceRequest creditRequest) {
 		boolean success = transactionActivity.creditAccount(creditRequest);
 		if (!success) {
-		// throw new TransactionProcessingException("Failed to credit to Destination
-		// account");
+			// throw new TransactionProcessingException("Failed to credit to Destination
+			// account");
 		}
 //        Workflow.await(() -> transactionActivity.creditAccount(creditRequest));
 	}
