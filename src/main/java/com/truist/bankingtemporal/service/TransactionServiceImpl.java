@@ -101,17 +101,4 @@ public class TransactionServiceImpl implements TransactionService {
         
         return flag;
 	}
-	
-	@Override
-	public boolean processCreditRollback(ServiceRequest creditRequest) {
-		CreditResponse response = (CreditResponse) postRequestAndGetData(serviceConfig.getCreditRollback(), creditRequest, CreditResponse.class);
-        log.debug(response.toString());
-        boolean flag = false;
-        if(response.getMessage().equals("Success")) {
-        	flag=true;
-        }
-        log.debug("Credited Amount is Successfully rollbacked to receiver's account");
-        
-        return flag;
-	}
 }

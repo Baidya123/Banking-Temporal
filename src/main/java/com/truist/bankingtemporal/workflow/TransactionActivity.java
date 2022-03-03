@@ -10,8 +10,6 @@ import io.temporal.workflow.Functions.Proc;
 public interface TransactionActivity {
     boolean debitAccount(ServiceRequest debitRequest);
     boolean creditAccount(ServiceRequest creditRequest);
-    boolean notifyAccounts(ServiceRequest transactionRequest);
     boolean fetchBalance(BalanceRequest balanceRequest);
     boolean debitRollback(ServiceRequest debitRollbackRequest);
-    boolean creditRollback(ServiceRequest creditRollbackRequest);
 }

@@ -44,6 +44,5 @@ truist.service-url.credit = http://localhost:7002/api/accounts/deposit
 truist.service-url.notify = http://localhost:7003/api/v1/checkBalance
 truist.service-url.balance = http://localhost:7003/api/v1/checkBalance
 truist.service-url.debit-rollback = http://localhost:7001/api/accounts/withdrawrollback
-truist.service-url.credit-rollback = http://localhost:7002/api/accounts/depositrollback
 ```
 

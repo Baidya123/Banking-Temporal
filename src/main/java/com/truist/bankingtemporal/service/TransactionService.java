@@ -11,5 +11,4 @@ public interface TransactionService {
     void notifyAll(ServiceRequest transactionRequest);
     CompletableFuture<Object> fetchBalance(BalanceRequest balanceRequest);
     boolean processDebitRollback(ServiceRequest debitRequest);
-    boolean processCreditRollback(ServiceRequest creditRequest);
 }

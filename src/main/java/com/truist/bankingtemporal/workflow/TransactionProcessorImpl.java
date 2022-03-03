@@ -14,6 +14,7 @@ import io.temporal.workflow.Workflow;
 public class TransactionProcessorImpl implements TransactionProcessor, TransactionBase {
 
 	private final TransactionActivity transactionActivity = ActivityStubUtils.getActivitiesStub();
+	private final NotificationActivity notificationActivity = ActivityStubUtils.getNotificationActivitiesStub();
 
 	@Override
 	public Object process(TransferRequest transferRequest) {
@@ -27,7 +28,7 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 		try {
 			// 1. debit sender
 			initDebit(serviceRequest); // await response
-			
+
 			/* to invoke debit rollback operation */
 			saga.addCompensation(transactionActivity::debitRollback, rollbackRequest);
 
@@ -37,10 +38,12 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 
 			// 2. credit receiver
 			initCredit(serviceRequest); // await response
-			
-			/* to invoke debit rollback operation */
-			saga.addCompensation(transactionActivity::creditRollback, serviceRequest);
-			
+
+		} catch (ActivityFailure e) {
+			saga.compensate();
+			throw e;
+		}
+		try {
 			// 3. send notifications
 			notifyRecipients(serviceRequest); // pick email ids from DB
 
@@ -50,7 +53,6 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 			return response;
 
 		} catch (ActivityFailure e) {
-			saga.compensate();
 			throw e;
 		}
 
@@ -78,7 +80,7 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 
 	@Override
 	public void notifyRecipients(ServiceRequest transactionRequest) {
-		Workflow.await(() -> transactionActivity.notifyAccounts(transactionRequest));
+		Workflow.await(() -> notificationActivity.notifyAccounts(transactionRequest));
 	}
 
 	@Override

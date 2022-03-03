@@ -15,11 +15,9 @@ import org.springframework.stereotype.Component;
 public class TransactionActivityImpl implements TransactionActivity {
 
     private static final String DEBIT_STATUS = "debiting sender account";
-    private static final String CREDIT_STATUS = "crediting receiver account";
-    private static final String NOTIFY_STATUS = "notifying all";
+    private static final String CREDIT_STATUS = "crediting receiver account";    
     private static final String BALANCE_STATUS = "finishing and fetching balance";
     private static final String DEBIT_ROLLBACK_STATUS = "reverting debited amount";
-    private static final String CREDIT_ROLLBACK_STATUS = "reverting credited amount";
 
     private final TransactionService transactionService;
     @Override
@@ -35,13 +33,6 @@ public class TransactionActivityImpl implements TransactionActivity {
     }
 
     @Override
-    public boolean notifyAccounts(ServiceRequest transactionRequest) {
-        log.debug(NOTIFY_STATUS);
-        transactionService.notifyAll(transactionRequest);
-        return true;
-    }
-
-    @Override
     public boolean fetchBalance(BalanceRequest balanceRequest) {
         log.debug(BALANCE_STATUS);
         transactionService.fetchBalance(balanceRequest).complete(true);
@@ -52,11 +43,5 @@ public class TransactionActivityImpl implements TransactionActivity {
     public boolean debitRollback(ServiceRequest debitRollbackRequest) {
         log.debug(DEBIT_ROLLBACK_STATUS);
         return transactionService.processDebitRollback(debitRollbackRequest);
-    }
-    
-    @Override
-    public boolean creditRollback(ServiceRequest creditRollbackRequest) {
-        log.debug(CREDIT_ROLLBACK_STATUS);
-        return transactionService.processCreditRollback(creditRollbackRequest);
     }
 }
