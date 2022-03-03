@@ -86,15 +86,31 @@ public class TransactionServiceImpl implements TransactionService {
         //return restTemplate.exchange(url, HttpMethod.GET, responseClass).getBody();
     }
 
+    /**
+     * To rollback the debited amount incase Credit or Notify service fails to process
+     */
 	@Override
 	public boolean processDebitRollback(ServiceRequest debitRequest) {
-		DebitResponse response = (DebitResponse) postRequestAndGetData(serviceConfig.getRollback(), debitRequest, DebitResponse.class);
+		DebitResponse response = (DebitResponse) postRequestAndGetData(serviceConfig.getDebitRollback(), debitRequest, DebitResponse.class);
         log.debug(response.toString());
         boolean flag = false;
         if(response.getMessage().equals("Success")) {
         	flag=true;
         }
         log.debug("Debited Amount is Successfully rollbacked to sender's account");
+        
+        return flag;
+	}
+	
+	@Override
+	public boolean processCreditRollback(ServiceRequest creditRequest) {
+		CreditResponse response = (CreditResponse) postRequestAndGetData(serviceConfig.getCreditRollback(), creditRequest, CreditResponse.class);
+        log.debug(response.toString());
+        boolean flag = false;
+        if(response.getMessage().equals("Success")) {
+        	flag=true;
+        }
+        log.debug("Credited Amount is Successfully rollbacked to receiver's account");
         
         return flag;
 	}

@@ -19,6 +19,7 @@ public class TransactionActivityImpl implements TransactionActivity {
     private static final String NOTIFY_STATUS = "notifying all";
     private static final String BALANCE_STATUS = "finishing and fetching balance";
     private static final String DEBIT_ROLLBACK_STATUS = "reverting debited amount";
+    private static final String CREDIT_ROLLBACK_STATUS = "reverting credited amount";
 
     private final TransactionService transactionService;
     @Override
@@ -51,5 +52,11 @@ public class TransactionActivityImpl implements TransactionActivity {
     public boolean debitRollback(ServiceRequest debitRollbackRequest) {
         log.debug(DEBIT_ROLLBACK_STATUS);
         return transactionService.processDebitRollback(debitRollbackRequest);
+    }
+    
+    @Override
+    public boolean creditRollback(ServiceRequest creditRollbackRequest) {
+        log.debug(CREDIT_ROLLBACK_STATUS);
+        return transactionService.processCreditRollback(creditRollbackRequest);
     }
 }

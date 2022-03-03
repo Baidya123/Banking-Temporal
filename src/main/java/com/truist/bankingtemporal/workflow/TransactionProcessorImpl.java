@@ -1,6 +1,7 @@
 package com.truist.bankingtemporal.workflow;
 
-import com.truist.bankingtemporal.exception.TransactionProcessingException;
+import java.util.ArrayList;
+
 import com.truist.bankingtemporal.model.BalanceRequest;
 import com.truist.bankingtemporal.model.ServiceRequest;
 import com.truist.bankingtemporal.model.TransferRequest;
@@ -10,8 +11,6 @@ import io.temporal.failure.ActivityFailure;
 import io.temporal.workflow.Saga;
 import io.temporal.workflow.Workflow;
 
-import java.util.ArrayList;
-
 public class TransactionProcessorImpl implements TransactionProcessor, TransactionBase {
 
 	private final TransactionActivity transactionActivity = ActivityStubUtils.getActivitiesStub();
@@ -19,7 +18,7 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 	@Override
 	public Object process(TransferRequest transferRequest) {
 		// Configure SAGA to run compensation activities in parallel
-		Saga.Options sagaOptions = new Saga.Options.Builder().setParallelCompensation(false).build();
+		Saga.Options sagaOptions = new Saga.Options.Builder().setParallelCompensation(true).build();
 		Saga saga = new Saga(sagaOptions);
 
 		ServiceRequest serviceRequest = createDebitRequestObj(transferRequest);
@@ -28,6 +27,7 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 		try {
 			// 1. debit sender
 			initDebit(serviceRequest); // await response
+			
 			/* to invoke debit rollback operation */
 			saga.addCompensation(transactionActivity::debitRollback, rollbackRequest);
 
@@ -37,21 +37,20 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 
 			// 2. credit receiver
 			initCredit(serviceRequest); // await response
+			
+			/* to invoke debit rollback operation */
+			saga.addCompensation(transactionActivity::creditRollback, serviceRequest);
+			
+			// 3. send notifications
+			notifyRecipients(serviceRequest); // pick email ids from DB
+
+			// 4. fetch balance of both sender & receiver
+			Object response = fetchBalance(createBalanceRequestObj(transferRequest)); // await response
+
+			return response;
 
 		} catch (ActivityFailure e) {
 			saga.compensate();
-			throw e;
-		}
-		try {
-		// 3. send notifications
-		notifyRecipients(serviceRequest); // pick email ids from DB
-
-		// 4. fetch balance of both sender & receiver
-		Object response = fetchBalance(createBalanceRequestObj(transferRequest)); // await response
-
-		return response;
-		
-		} catch (ActivityFailure e) {
 			throw e;
 		}
 

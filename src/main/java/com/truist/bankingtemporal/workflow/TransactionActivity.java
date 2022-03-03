@@ -13,4 +13,5 @@ public interface TransactionActivity {
     boolean notifyAccounts(ServiceRequest transactionRequest);
     boolean fetchBalance(BalanceRequest balanceRequest);
     boolean debitRollback(ServiceRequest debitRollbackRequest);
+    boolean creditRollback(ServiceRequest creditRollbackRequest);
 }
