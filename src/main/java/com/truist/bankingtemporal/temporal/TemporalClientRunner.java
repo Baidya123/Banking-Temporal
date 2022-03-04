@@ -38,7 +38,7 @@ public class TemporalClientRunner implements ApplicationRunner {
 				WorkflowOptions.newBuilder().setWorkflowId(id.toString()).setTaskQueue(taskQueue)
 				//.setWorkflowExecutionTimeout(Duration.ofSeconds(20))
 						.setRetryOptions(
-								RetryOptions.newBuilder().setBackoffCoefficient(1).setMaximumAttempts(3).build())
+								RetryOptions.newBuilder().setBackoffCoefficient(1).setMaximumAttempts(1).build())
 						.build());
 		try {
 			return transactionProcessor.process(transactionRequest);

@@ -17,7 +17,7 @@ public class ActivityStubUtils {
                         .setScheduleToCloseTimeout(Duration.ofSeconds(60)) // retry timeout
                         .setRetryOptions(RetryOptions.newBuilder()
                                 .setBackoffCoefficient(1)
-                                .setMaximumAttempts(3)
+                                .setMaximumAttempts(1)
                                 .build())
                         .build());
     }
@@ -32,8 +32,8 @@ public class ActivityStubUtils {
                 ActivityOptions.newBuilder()
                         .setScheduleToCloseTimeout(Duration.ofSeconds(120)) // retry timeout
                         .setRetryOptions(RetryOptions.newBuilder()
-                                .setBackoffCoefficient(2) //
-                                .setMaximumAttempts(5)
+                                .setBackoffCoefficient(2) //factor that is multiplied by no.of attempts to increase the interval btw attempts gradually 
+                                .setMaximumAttempts(10)
                                 .setMaximumInterval(Duration.ofSeconds(20))
                                 .build())
                         .build());
