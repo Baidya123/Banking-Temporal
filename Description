@@ -1,0 +1,10 @@
+For Rabbit MQ integration::
+Use docker image -> docker run -it --rm --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3.9-management
+run the above from cmd, and access the MQ server at http://localhost:15672/ navigate to Queues tab.
+If the api /checkbalance is successful you can see a message published in Queue. Click on get message tab in MQ dashboard to see detailed message.
+For email integration with gmail:: 
+Use the properties as written in application.properties file, give your respective username and password
+if you get an "ssl error with no protocols defined" - use the below jvm argument to fix
+ -Dmail.smtp.ssl.protocols=TLSv1.2
+If you have two factor authentication enabled in gmail generate an app password from Google and use it instead of your actual password in properties file. Refer the link below 
+ https://www.nucleustechnologies.com/supportcenter/kb/how-to-create-an-app-password-for-gmail
