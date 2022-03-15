@@ -2,9 +2,8 @@ package com.truist.bankingtemporal.workflow;
 
 import com.truist.bankingtemporal.model.BalanceRequest;
 import com.truist.bankingtemporal.model.ServiceRequest;
-import com.truist.bankingtemporal.model.TransferRequest;
+
 import io.temporal.activity.ActivityInterface;
-import io.temporal.workflow.Functions.Proc;
 
 @ActivityInterface
 public interface TransactionActivity {
