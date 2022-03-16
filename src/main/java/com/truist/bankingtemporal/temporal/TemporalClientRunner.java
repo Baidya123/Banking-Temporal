@@ -11,9 +11,9 @@ import com.truist.bankingtemporal.workflow.TransactionProcessor;
 import com.truist.bankingtemporal.workflow.TransactionProcessorImpl;
 
 import io.temporal.api.common.v1.WorkflowExecution;
+import io.temporal.api.enums.v1.WorkflowIdReusePolicy;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
-import io.temporal.client.WorkflowStub;
 import io.temporal.common.RetryOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
@@ -34,11 +34,13 @@ public class TemporalClientRunner implements ApplicationRunner {
 		
 		// WorkflowServiceStubs is a gRPC stubs wrapper that talks to the local Docker instance of the Temporal server.
        WorkflowServiceStubs service = WorkflowServiceStubs.newInstance();
+       
         WorkflowOptions options = WorkflowOptions.newBuilder()
                 .setTaskQueue(taskQueue)
                 // A WorkflowId prevents this it from having duplicate instances, remove it to duplicate.
-                .setWorkflowId("money-transfer-workflow")
+               // .setWorkflowId()
                // .setWorkflowExecutionTimeout(Duration.ofSeconds(20))
+                .setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_ALLOW_DUPLICATE_FAILED_ONLY)
                 .setRetryOptions(
 						RetryOptions.newBuilder().setBackoffCoefficient(1).setMaximumAttempts(3).build())
                 .build();
@@ -54,7 +56,7 @@ public class TemporalClientRunner implements ApplicationRunner {
         
          
         
-        return "Workflow Initiated !! /n Workflow ID:"+we.getWorkflowId()+" Run ID:"+we.getRunId();
+        return "Workflow Initiated !! \n Workflow ID:"+we.getWorkflowId()+" \n Run ID:"+we.getRunId();
 	/*	UUID id = UUID.randomUUID(); // TODO: to be updated with transactionRequest data
 		TransactionProcessor transactionProcessor = getClient().newWorkflowStub(TransactionProcessor.class,
 				WorkflowOptions.newBuilder().setWorkflowId(id.toString()).setTaskQueue(taskQueue)
