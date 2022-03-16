@@ -1,4 +1,20 @@
 
+Install Temporal Server
+=============================
+
+https://docs.temporal.io/docs/java
+
+For cloning the repo, install github desktop.
+
+Install Temporal Server using docker-compose
+https://docs.temporal.io/docs/server/quick-install/
+
+1. Install Docker : https://docs.temporal.io/docs/server/quick-install/#docker
+To install Docker, (refer https://docs.docker.com/desktop/windows/install/)
+1. enable Hyper-V backend and Windows containers 
+2. Follow the steps mentioned to install Docker Desktop on Windows.
+
+
 # Banking with Temporal
 
 The project demonstrate the use of workflow using Temporal
