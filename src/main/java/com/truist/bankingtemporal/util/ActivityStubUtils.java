@@ -17,7 +17,7 @@ public class ActivityStubUtils {
                         .setScheduleToCloseTimeout(Duration.ofMinutes(5)) // retry timeout
                         .setRetryOptions(RetryOptions.newBuilder()
                                 .setBackoffCoefficient(2)
-                                .setMaximumAttempts(10)
+                                .setMaximumAttempts(7)
                                 .build())
                         .build());
     }
