@@ -14,6 +14,7 @@ import io.temporal.api.common.v1.WorkflowExecution;
 import io.temporal.client.WorkflowClient;
 import io.temporal.client.WorkflowOptions;
 import io.temporal.client.WorkflowStub;
+import io.temporal.common.RetryOptions;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import io.temporal.worker.Worker;
 import io.temporal.worker.WorkerFactory;
@@ -37,6 +38,9 @@ public class TemporalClientRunner implements ApplicationRunner {
                 .setTaskQueue(taskQueue)
                 // A WorkflowId prevents this it from having duplicate instances, remove it to duplicate.
                 .setWorkflowId("money-transfer-workflow")
+               // .setWorkflowExecutionTimeout(Duration.ofSeconds(20))
+                .setRetryOptions(
+						RetryOptions.newBuilder().setBackoffCoefficient(1).setMaximumAttempts(3).build())
                 .build();
         // WorkflowClient can be used to start, signal, query, cancel, and terminate Workflows.
         WorkflowClient client = WorkflowClient.newInstance(service);
@@ -50,7 +54,7 @@ public class TemporalClientRunner implements ApplicationRunner {
         
          
         
-        return "Workflow Initiated!!";
+        return "Workflow Initiated !! /n Workflow ID:"+we.getWorkflowId()+" Run ID:"+we.getRunId();
 	/*	UUID id = UUID.randomUUID(); // TODO: to be updated with transactionRequest data
 		TransactionProcessor transactionProcessor = getClient().newWorkflowStub(TransactionProcessor.class,
 				WorkflowOptions.newBuilder().setWorkflowId(id.toString()).setTaskQueue(taskQueue)
