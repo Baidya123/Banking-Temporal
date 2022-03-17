@@ -28,10 +28,11 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public boolean processDebit(ServiceRequest debitRequest) {
-    	//System.out.println("Debit call started");
+    	
     	DebitResponse response = (DebitResponse) postRequestAndGetData(serviceConfig.getDebit(), debitRequest, DebitResponse.class);
         log.debug(response.toString());
         boolean flag = false;
+        
         if(response.getMessage().equals("Success")) {
         	flag=true;
         }
@@ -75,7 +76,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
     
     private ResponseEntity<String> getRequestAndGetData(String url, ServiceRequest creditRequest, Class<?> responseClass) {
-        //HttpEntity<ServiceRequest> httpEntity = new HttpEntity<>(creditRequest);
+       
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<ServiceRequest> requestEntity = new HttpEntity<>(null, headers);
         
@@ -83,7 +84,7 @@ public class TransactionServiceImpl implements TransactionService {
 
         
         return result;
-        //return restTemplate.exchange(url, HttpMethod.GET, responseClass).getBody();
+        
     }
 
     /**

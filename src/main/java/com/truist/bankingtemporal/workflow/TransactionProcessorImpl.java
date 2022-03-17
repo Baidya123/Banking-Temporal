@@ -7,6 +7,7 @@ import com.truist.bankingtemporal.model.ServiceRequest;
 import com.truist.bankingtemporal.model.TransferRequest;
 import com.truist.bankingtemporal.util.ActivityStubUtils;
 
+import io.temporal.activity.Activity;
 import io.temporal.failure.ActivityFailure;
 import io.temporal.workflow.Saga;
 import io.temporal.workflow.Workflow;
@@ -18,7 +19,10 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 
 	@Override
 	public Object process(TransferRequest transferRequest) {
-		// Configure SAGA to run compensation activities in parallel
+		/*
+		 *  Configure SAGA to run compensation activities in parallel
+		 *  {@link io.temporal.workflow.Saga} implements the logic to perform compensation operations
+		 */
 		Saga.Options sagaOptions = new Saga.Options.Builder().setParallelCompensation(true).build();
 		Saga saga = new Saga(sagaOptions);
 
@@ -39,9 +43,10 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 			// 2. credit receiver
 			initCredit(serviceRequest); // await response
 
-		} catch (ActivityFailure e) {
+		} 
+		catch (ActivityFailure e) {
 			saga.compensate();
-			throw e;
+			throw Activity.wrap(e);
 		}
 		try {
 			// 3. send notifications
