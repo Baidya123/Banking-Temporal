@@ -1,13 +1,19 @@
 package com.truist.bankingtemporal.workflow;
 
+import org.springframework.stereotype.Component;
+
+import com.truist.bankingtemporal.exception.NoSuchAccountException;
 import com.truist.bankingtemporal.model.BalanceRequest;
 import com.truist.bankingtemporal.model.ServiceRequest;
 import com.truist.bankingtemporal.service.TransactionService;
 
-import io.temporal.workflow.Functions.Proc;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+
+/**
+ * Implementation of our workflow activity interface. It overwrites our defined
+ * activity methods.
+ */
 
 @Component
 @Slf4j
@@ -21,15 +27,20 @@ public class TransactionActivityImpl implements TransactionActivity {
 
     private final TransactionService transactionService;
     @Override
-    public boolean debitAccount(ServiceRequest debitRequest) {
+    public void debitAccount(ServiceRequest debitRequest) {
         log.debug(DEBIT_STATUS);
-        return transactionService.processDebit(debitRequest);
+        try {
+        	transactionService.processDebit(debitRequest);
+        }catch(NoSuchAccountException e) {
+        	throw e;
+        }
+        
     }
 
     @Override
-    public boolean creditAccount(ServiceRequest creditRequest) {
+    public void creditAccount(ServiceRequest creditRequest) {
         log.debug(CREDIT_STATUS);
-        return transactionService.processCredit(creditRequest);
+        transactionService.processCredit(creditRequest);
     }
 
     @Override

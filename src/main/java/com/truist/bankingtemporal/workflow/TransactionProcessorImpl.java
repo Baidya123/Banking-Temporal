@@ -2,6 +2,7 @@ package com.truist.bankingtemporal.workflow;
 
 import java.util.ArrayList;
 
+import com.truist.bankingtemporal.exception.NoSuchAccountException;
 import com.truist.bankingtemporal.model.BalanceRequest;
 import com.truist.bankingtemporal.model.ServiceRequest;
 import com.truist.bankingtemporal.model.TransferRequest;
@@ -12,6 +13,10 @@ import io.temporal.failure.ActivityFailure;
 import io.temporal.workflow.Saga;
 import io.temporal.workflow.Workflow;
 
+/**
+ * Workflow method implementation class to execute all the activities
+ *
+ */
 public class TransactionProcessorImpl implements TransactionProcessor, TransactionBase {
 
 	private final TransactionActivity transactionActivity = ActivityStubUtils.getActivitiesStub();
@@ -30,7 +35,7 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 		ServiceRequest rollbackRequest = createDebitRequestObj(transferRequest);
 
 		try {
-			// 1. debit sender
+			// 1. initiate debit activity
 			initDebit(serviceRequest); // await response
 
 			/* to invoke debit rollback operation */
@@ -40,16 +45,18 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 			serviceRequest.setSourceAccountNumber(serviceRequest.getDestinationAccountNumber());
 			serviceRequest.setDestinationAccountNumber(tmp);
 
-			// 2. credit receiver
+			// 2. initiate crdeit activity
 			initCredit(serviceRequest); // await response
 
-		} 
+		} catch (NoSuchAccountException e) {
+			throw e;
+		}
 		catch (ActivityFailure e) {
 			saga.compensate();
 			throw Activity.wrap(e);
 		}
 		try {
-			// 3. send notifications
+			// 3. initiate notification activity
 			notifyRecipients(serviceRequest); // pick email ids from DB
 
 			// 4. fetch balance of both sender & receiver
@@ -65,22 +72,12 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 
 	@Override
 	public void initDebit(ServiceRequest debitRequest) {
-		boolean success = transactionActivity.debitAccount(debitRequest);
-		if (!success) {
-			// throw new TransactionProcessingException("Failed to debit from Source
-			// account");
-		}
-//        Workflow.await(() -> transactionActivity.debitAccount(debitRequest));
+		transactionActivity.debitAccount(debitRequest);
 	}
 
 	@Override
 	public void initCredit(ServiceRequest creditRequest) {
-		boolean success = transactionActivity.creditAccount(creditRequest);
-		if (!success) {
-			// throw new TransactionProcessingException("Failed to credit to Destination
-			// account");
-		}
-//        Workflow.await(() -> transactionActivity.creditAccount(creditRequest));
+		transactionActivity.creditAccount(creditRequest);
 	}
 
 	@Override

@@ -4,6 +4,8 @@ import java.time.Duration;
 
 import org.springframework.web.client.HttpServerErrorException.InternalServerError;
 
+import com.truist.bankingtemporal.exception.NoSuchAccountException;
+import com.truist.bankingtemporal.exception.TransactionProcessingException;
 import com.truist.bankingtemporal.workflow.NotificationActivity;
 import com.truist.bankingtemporal.workflow.TransactionActivity;
 
@@ -37,9 +39,9 @@ public class ActivityStubUtils {
                         .setScheduleToCloseTimeout(Duration.ofMinutes(5))
                         .setRetryOptions(RetryOptions.newBuilder()
                         		//.setInitialInterval(Duration.ofSeconds(1))
-                        		//.setDoNotRetry(InternalServerError.class.getName())
+                        		.setDoNotRetry(NoSuchAccountException.class.getName(), TransactionProcessingException.class.getName())
                                 .setBackoffCoefficient(2)
-                                .setMaximumAttempts(7)
+                                .setMaximumAttempts(3)
                                 .build())
                         .build());
     }

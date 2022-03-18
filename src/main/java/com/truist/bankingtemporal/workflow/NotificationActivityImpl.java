@@ -8,6 +8,11 @@ import com.truist.bankingtemporal.service.TransactionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Implementation of our workflow activity interface. It overwrites our defined
+ * activity method.
+ */
+
 @Component
 @Slf4j
 @RequiredArgsConstructor
