@@ -10,11 +10,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.model.Account;
+import com.example.demo.model.EmailRequest;
 import com.example.demo.queue.RabbitMQSender;
 import com.example.demo.service.AccountService;
 import com.example.demo.service.EmailService;
@@ -36,51 +39,76 @@ public class AccountBalanceController {
 	@Autowired
 	private EmailService emailService;
 
+	/*
+	 * Account balance retrieval , through Rabbit MQ and email notification
+	 */
 	@GetMapping("/checkBalance")
 	public ResponseEntity<StandardJsonResponse> getBalance(@RequestParam(required = true) long accountNo) {
 
 		StandardJsonResponse jsonResponse = new StandardJsonResponseImpl();
 		HashMap<String, Object> responseData = new HashMap<>();
+		HashMap<String, String> responseMessage = new HashMap<>();
 
 		try {
-			Optional<Account> account = Optional.of(accountService.findByAccountNumber(accountNo));
+			Optional<Account> account = Optional.ofNullable(accountService.findByAccountNumber(accountNo));
 
-			if (account.isPresent()) {
+			if (!account.isPresent()) {
+
+				jsonResponse.setSuccess(false, "Resource not found", StandardJsonResponse.RESOURCE_NOT_FOUND_MSG);
+				logger.info("Account not available");
+				responseMessage.put("account unavailable", StandardJsonResponse.RESOURCE_NOT_FOUND_MSG);
+				jsonResponse.setMessages(responseMessage);
+				rabbitMQSender.send(jsonResponse);
+
+			} else {
 				responseData.put("balance", account.get().getBalance());
-
 				jsonResponse.setSuccess(true, "Account Balance", "Retrieved Successfully");
 				jsonResponse.setData(responseData);
-			} else {
-				jsonResponse.setSuccess(false, "Resource not found", StandardJsonResponse.RESOURCE_NOT_FOUND_MSG);
+				logger.info("Calling Rabbit MQ");
+				rabbitMQSender.send(jsonResponse);
+
 			}
 
 		} catch (Exception e) {
-			logger.error("exception", e);
+			logger.error(e.getMessage());
 			jsonResponse.setSuccess(false, StandardJsonResponse.DEFAULT_MSG_TITLE_VALUE,
 					StandardJsonResponse.DEFAULT_MSG_NAME_VALUE);
+			responseMessage.put("error", StandardJsonResponse.DEFAULT_MSG_NAME_VALUE);
+			jsonResponse.setMessages(responseMessage);
+			rabbitMQSender.send(jsonResponse);
 			return new ResponseEntity<>(jsonResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		System.out.println("Calling Rabbit MQ");
-		rabbitMQSender.send(jsonResponse);
-		System.out.println("Published to  Rabbit MQ");
+		logger.info("Published to  Rabbit MQ");
 		return new ResponseEntity<>(jsonResponse, HttpStatus.OK);
 	}
 
-	@GetMapping(value = "/sendmail")
-	public String sendmail() {
-
-		emailService.sendMail("rimi.ank@gmail.com", "Test Subject", "Test mail");
-		emailService.sendPreConfiguredMail("Happy Coding!!!");
-
-		return "emailsent";
-	}
-	
 	@GetMapping(value = "/findAllAccountBalance")
 	public List<Account> findAllAccountBalance() {
 
 		List<Account> accountList = (List<Account>) accountService.findAllAccountBalanceTest();
 
 		return accountList;
+	}
+
+	/*
+	 * Notification email to users on account activity
+	 */
+	@PostMapping("/emailNotify")
+	public ResponseEntity<?> sendEmail(@RequestBody EmailRequest request) {
+
+		logger.info(request);
+
+		boolean result = this.emailService.sendMail(request.getTo(), request.getSubject(), request.getMessage());
+
+		if (result) {
+
+			return ResponseEntity.ok("Email Sent Successfully to user with email-Id:: " + request.getTo());
+
+		} else {
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body("email sending failed for user :: " + request.getTo());
+		}
 	}
 
 }
