@@ -8,4 +8,5 @@ public class TransferRequest {
     private Account debitAccount;
     private Account creditAccount;
     private Payment payment;
+    private String notifyEmail;
 }
