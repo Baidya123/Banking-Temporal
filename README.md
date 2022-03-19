@@ -24,7 +24,8 @@ For End point 1:
   },
   "payment": {
     "amount": 150
-  }
+  },
+  "notifyEmail":"abc@gmail.com"
 }
 ```
 Demo Response
