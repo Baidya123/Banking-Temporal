@@ -1,6 +1,9 @@
 package com.example.demo.service;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -11,24 +14,28 @@ public class EmailService {
 	@Autowired
 	private JavaMailSender mailSender;
 
-	@Autowired
-	private SimpleMailMessage preConfiguredMessage;
+	protected final Log logger = LogFactory.getLog(getClass());
 
-	public void sendMail(String to, String subject, String body) {
-		SimpleMailMessage message = new SimpleMailMessage();
-		message.setTo(to);
-		message.setSubject(subject);
-		message.setText(body);
-		mailSender.send(message);
-	}
+	public boolean sendMail(String to, String subject, String body) {
 
-	/**
-	 * This method will send a pre-configured message
-	 */
-	public void sendPreConfiguredMail(String message) {
-		SimpleMailMessage mailMessage = new SimpleMailMessage(preConfiguredMessage);
-		mailMessage.setText(message);
-		mailSender.send(mailMessage);
+		boolean foo = false;
+
+		try {
+			SimpleMailMessage message = new SimpleMailMessage();
+			message.setTo(to);
+			message.setSubject(subject);
+			message.setText(body);
+			mailSender.send(message);
+			foo = true;
+		}
+
+		catch (MailException e) {
+
+			logger.error("Exceoption from mail service :: " + e.getLocalizedMessage());
+			e.printStackTrace();
+		}
+
+		return foo;
 	}
 
 }
