@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import com.truist.bankingtemporal.config.ServiceConfig;
@@ -38,13 +37,10 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public void processDebit(ServiceRequest debitRequest) {
-    	try {
+
     	DebitResponse response = (DebitResponse) postRequestAndGetData(serviceConfig.getDebit(), debitRequest, DebitResponse.class);
         log.debug(response.toString());
         log.debug("Debit Successful from sender's account");
-    	} catch (NoSuchAccountException e) {
-    		throw e;
-    	}
     }
 
     @Override
@@ -87,20 +83,29 @@ public class TransactionServiceImpl implements TransactionService {
        try {
         return restTemplate.exchange(url, HttpMethod.POST, httpEntity, responseClass).getBody();
        }catch(HttpClientErrorException e) {
-    	   if(404==e.getStatusCode().value()) {
-    		   throw new NoSuchAccountException("Account not found");
+    	   if(404==e.getStatusCode().value() && e.getResponseBodyAsString().contains("Account not found")) {
+    		   throw new NoSuchAccountException("Account :" + creditRequest.getDestinationAccountNumber()+ "  not found");
     	   }else {
     		   throw e;
     	   }
        }catch(HttpServerErrorException e) {
-    	   if(500==e.getStatusCode().value()) {
-    		   throw new TransactionProcessingException("Insufficient Balance");
+    	   if(e.getResponseBodyAsString().contains("Insufficient Balance")) {
+    		   throw new TransactionProcessingException("Insufficient Balance in Account : "+ creditRequest.getDestinationAccountNumber());
     	   }else {
     		   throw e;
     	   }
        }
     }
     
+    
+    
+    /**
+     * Method to call Notify service
+     * @param url
+     * @param creditRequest
+     * @param responseClass
+     * @return
+     */
     private ResponseEntity<String> getRequestAndGetData(String url, ServiceRequest creditRequest, Class<?> responseClass) {
        
         HttpHeaders headers = new HttpHeaders();

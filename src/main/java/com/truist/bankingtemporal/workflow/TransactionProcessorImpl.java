@@ -2,7 +2,6 @@ package com.truist.bankingtemporal.workflow;
 
 import java.util.ArrayList;
 
-import com.truist.bankingtemporal.exception.NoSuchAccountException;
 import com.truist.bankingtemporal.model.BalanceRequest;
 import com.truist.bankingtemporal.model.ServiceRequest;
 import com.truist.bankingtemporal.model.TransferRequest;
@@ -48,10 +47,7 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 			// 2. initiate crdeit activity
 			initCredit(serviceRequest); // await response
 
-		} catch (NoSuchAccountException e) {
-			throw e;
-		}
-		catch (ActivityFailure e) {
+		}catch (ActivityFailure e) {
 			saga.compensate();
 			throw Activity.wrap(e);
 		}
