@@ -1,6 +1,7 @@
 package com.truist.bankingtemporal.controller;
 
 import com.truist.bankingtemporal.model.TransferRequest;
+import com.truist.bankingtemporal.service.TransactionService;
 import com.truist.bankingtemporal.temporal.TemporalClientRunner;
 import com.truist.bankingtemporal.workflow.TransactionProcessor;
 
@@ -19,10 +20,12 @@ public class MainController {
 
     private final TemporalClientRunner temporalClientRunner;
     //private final TransactionProcessor transactionProcessor;
-    
+
+    private final TransactionService transactionService;
 
     @PostMapping("/fund-transfer")
     private ResponseEntity<?> initTransfer(@RequestBody TransferRequest transactionRequest) {
+        transactionService.setNotifyEmail(transactionRequest.getNotifyEmail());
         return ResponseEntity.ok(temporalClientRunner.processTransaction(transactionRequest));
     }
 }
