@@ -10,6 +10,8 @@ public class StandardJsonResponseImpl implements StandardJsonResponse {
 	private HashMap<String, String> errors;
 
 	private HashMap<String, Object> data;
+	
+	private HashMap<String, String> recipient;
 
 
 	public StandardJsonResponseImpl() {
@@ -17,6 +19,7 @@ public class StandardJsonResponseImpl implements StandardJsonResponse {
 		messages = new HashMap<String, String>();
 		errors = new HashMap<String, String>();
 		data = new HashMap<String, Object>();
+		recipient= new HashMap<String, String>();
 	}
 
 	@Override
@@ -72,6 +75,18 @@ public class StandardJsonResponseImpl implements StandardJsonResponse {
 		this.success = success;
 		messages.put(DEFAULT_MSG_NAME_FIELD, (message == null || message.isEmpty()) ? "" : message);
 		messages.put(DEFAULT_MSG_TITLE_FIELD, (title == null || title.isEmpty()) ? "" : title);
+	}
+
+	@Override
+	public HashMap<String, String> getRecipient() {
+		return recipient;
+	}
+
+	
+	@Override
+	public void setRecipient(HashMap<String, String> recipient) {
+		this.recipient=recipient;
+		
 	}
 
 }
