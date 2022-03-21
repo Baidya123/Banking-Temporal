@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class RabbitMQReceiver {
 	protected final Log logger = LogFactory.getLog(getClass());
 	private static final String Email_Subject = "Account Balance Information";
-	private static final String Email_To = "rimi.ank@gmail.com";
 
 	@Autowired
 	private EmailService emailService;
@@ -26,7 +25,12 @@ public class RabbitMQReceiver {
 
 		LocalDateTime date = LocalDateTime.now();
 		ObjectMapper objectMapper = new ObjectMapper();
+		
 		try {
+
+			final String emailTo = objectMapper.writeValueAsString(response.getRecipient().get("to"));
+			logger.info("email ID of Recepient ::" + emailTo);
+
 			if (!response.isSuccess()) {
 
 				if (response.getMessages().containsKey("error")) {
@@ -34,13 +38,13 @@ public class RabbitMQReceiver {
 					String errorMsg = objectMapper.writeValueAsString(response.getMessages().get("error"));
 					logger.info("Attempting to send email on failure with reason  :: " + errorMsg);
 
-					emailService.sendMail(Email_To, Email_Subject, errorMsg);
+					emailService.sendMail(emailTo, Email_Subject, errorMsg);
 				} else {
 					String errorMsg = objectMapper
 							.writeValueAsString(response.getMessages().get("account unavailable"));
 					logger.info("Attempting to send email on account not available  :: " + errorMsg);
 
-					emailService.sendMail(Email_To, Email_Subject, errorMsg);
+					emailService.sendMail(emailTo, Email_Subject, errorMsg);
 				}
 
 				logger.info("Email sent succesfully on processing failure!!");
@@ -52,7 +56,7 @@ public class RabbitMQReceiver {
 						+ date.toString();
 				logger.info("Attempting to send email with updated balance info :: " + jsonString);
 
-				emailService.sendMail(Email_To, Email_Subject, jsonString);
+				emailService.sendMail(emailTo, Email_Subject, jsonString);
 
 				logger.info("Email sent succesfully!!");
 			}
