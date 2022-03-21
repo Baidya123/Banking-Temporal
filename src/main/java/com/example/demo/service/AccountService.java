@@ -14,11 +14,14 @@ import com.example.demo.model.Account;
 @Repository
 public interface AccountService extends CrudRepository<Account, Long> {
 	
-	@Query("SELECT a FROM Account a WHERE accountNumber = :accountNumber")
-    public Account findByAccountNumber(@Param("accountNumber") long accountNumber);
+	@Query("SELECT a.balance , a.email FROM Account a WHERE a.accountNumber = :accountNumber")
+	public List<Object[]> findByAccountNumber(@Param("accountNumber") Long accountNo);
 	
 	@Query("SELECT a FROM Account a")
-    public List<Account> findAllAccountBalanceTest();
+        public List<Account> findAllAccountBalanceTest();
 }
+
+
+
 
 
