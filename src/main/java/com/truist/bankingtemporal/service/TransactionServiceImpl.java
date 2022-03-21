@@ -63,7 +63,7 @@ public class TransactionServiceImpl implements TransactionService {
         
         String destinationURL = serviceConfig.getBalance()+"?accountNo="+notifyRequest.getDestinationAccountNumber();
         log.debug("Destination URL "+destinationURL);
-        ResponseEntity<String> responseDestination = getRequestAndGetData(sourceURL, notifyRequest, String.class);
+        ResponseEntity<String> responseDestination = getRequestAndGetData(destinationURL, notifyRequest, String.class);
         log.debug(responseDestination.toString());
         log.debug("Notification: Dear Mr.Sender, your account balance is $x");
         log.debug("Notification: Dear Mr.Receiver, your account balance is $x");
