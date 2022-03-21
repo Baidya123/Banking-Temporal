@@ -48,9 +48,14 @@ public class AccountBalanceController {
 		StandardJsonResponse jsonResponse = new StandardJsonResponseImpl();
 		HashMap<String, Object> responseData = new HashMap<>();
 		HashMap<String, String> responseMessage = new HashMap<>();
+		HashMap<String, String> recepientMail = new HashMap<>();
 
 		try {
-			Optional<Account> account = Optional.ofNullable(accountService.findByAccountNumber(accountNo));
+			Optional<List<Object[]>> account = Optional.ofNullable(accountService.findByAccountNumber(accountNo));
+			Object[] userDetails = account.get().get(0);
+
+			String email = String.valueOf(userDetails[1]);
+			logger.info("EmailID fetched from dB is :: " + email + " for account Number :: " + accountNo);
 
 			if (!account.isPresent()) {
 
@@ -58,13 +63,16 @@ public class AccountBalanceController {
 				logger.info("Account not available");
 				responseMessage.put("account unavailable", StandardJsonResponse.RESOURCE_NOT_FOUND_MSG);
 				jsonResponse.setMessages(responseMessage);
-				rabbitMQSender.send(jsonResponse);
+				// rabbitMQSender.send(jsonResponse);
 
 			} else {
-				responseData.put("balance", account.get().getBalance());
-				jsonResponse.setSuccess(true, "Account Balance", "Retrieved Successfully");
+				responseData.put("balance", userDetails[0]);
 				jsonResponse.setData(responseData);
-				logger.info("Calling Rabbit MQ");
+				recepientMail.put("to", email);
+				jsonResponse.setRecipient(recepientMail);
+				jsonResponse.setSuccess(true, "Account Balance", "Retrieved Successfully");
+
+				logger.info("Calling Rabbit MQ to publish message");
 				rabbitMQSender.send(jsonResponse);
 
 			}
@@ -75,7 +83,7 @@ public class AccountBalanceController {
 					StandardJsonResponse.DEFAULT_MSG_NAME_VALUE);
 			responseMessage.put("error", StandardJsonResponse.DEFAULT_MSG_NAME_VALUE);
 			jsonResponse.setMessages(responseMessage);
-			rabbitMQSender.send(jsonResponse);
+			// rabbitMQSender.send(jsonResponse);
 			return new ResponseEntity<>(jsonResponse, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		logger.info("Published to  Rabbit MQ");
