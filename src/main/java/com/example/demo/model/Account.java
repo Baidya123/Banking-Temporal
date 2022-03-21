@@ -2,13 +2,10 @@ package com.example.demo.model;
 
 import java.time.Instant;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
@@ -28,16 +25,25 @@ public class Account {
     
     private  Instant creationDate;
     
+    private String email;
+
+    
 	public Account() {
 		super();
 		// TODO Auto-generated constructor stub
 	}
 
-	public Account( long balance, Instant creationDate) {
+	
+
+	public Account(long accountNumber, long balance, Instant creationDate, String email) {
 		super();
+		this.accountNumber = accountNumber;
 		this.balance = balance;
 		this.creationDate = creationDate;
+		this.email = email;
 	}
+
+
 
 	public long getAccountNumber() {
 		return accountNumber;
@@ -61,6 +67,14 @@ public class Account {
 
 	public long getBalance() {
 		return balance;
+	}
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
 	}
 
 
