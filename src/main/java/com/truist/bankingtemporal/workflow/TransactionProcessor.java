@@ -21,6 +21,6 @@ public interface TransactionProcessor {
 	 * The Workflow Execution completes when this method finishes execution.
 	 */
 	@WorkflowMethod
-	Object process(TransferRequest transactionRequest);
+	void process(TransferRequest transactionRequest);
 
 }

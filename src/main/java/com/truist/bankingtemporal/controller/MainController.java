@@ -6,6 +6,7 @@ import com.truist.bankingtemporal.temporal.TemporalClientRunner;
 import com.truist.bankingtemporal.workflow.TransactionProcessor;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -21,7 +22,8 @@ public class MainController {
     private final TemporalClientRunner temporalClientRunner;
     //private final TransactionProcessor transactionProcessor;
 
-    private final TransactionService transactionService;
+    @Autowired
+    private  TransactionService transactionService;
 
     @PostMapping("/fund-transfer")
     private ResponseEntity<?> initTransfer(@RequestBody TransferRequest transactionRequest) {

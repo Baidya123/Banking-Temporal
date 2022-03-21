@@ -2,7 +2,6 @@ package com.truist.bankingtemporal.workflow;
 
 import org.springframework.stereotype.Component;
 
-import com.truist.bankingtemporal.model.BalanceRequest;
 import com.truist.bankingtemporal.model.ServiceRequest;
 import com.truist.bankingtemporal.service.TransactionService;
 
@@ -21,7 +20,7 @@ public class TransactionActivityImpl implements TransactionActivity {
 
 	private static final String DEBIT_STATUS = "debiting sender account";
 	private static final String CREDIT_STATUS = "crediting receiver account";
-	private static final String BALANCE_STATUS = "finishing and fetching balance";
+	private static final String NOTIFY_STATUS = "notifying dashboard user";
 	private static final String DEBIT_ROLLBACK_STATUS = "reverting debited amount";
 
 	private final TransactionService transactionService;
@@ -40,10 +39,9 @@ public class TransactionActivityImpl implements TransactionActivity {
 	}
 
 	@Override
-	public boolean fetchBalance(BalanceRequest balanceRequest) {
-		log.debug(BALANCE_STATUS);
-		transactionService.fetchBalance(balanceRequest).complete(true);
-		return true;
+	public void notifyUser(String workflowId) {
+		log.debug(NOTIFY_STATUS);
+		transactionService.notifyUser("Dear User, Workflow ID " + workflowId + " has been successfully completed.");
 	}
 
 	@Override

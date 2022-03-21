@@ -22,7 +22,7 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 	private final NotificationActivity notificationActivity = ActivityStubUtils.getNotificationActivitiesStub();
 
 	@Override
-	public Object process(TransferRequest transferRequest) {
+	public void process(TransferRequest transferRequest) {
 		/*
 		 *  Configure SAGA to run compensation activities in parallel
 		 *  {@link io.temporal.workflow.Saga} implements the logic to perform compensation operations
@@ -55,10 +55,8 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 			// 3. initiate notification activity
 			notifyRecipients(serviceRequest); // pick email ids from DB
 
-			// 4. fetch balance of both sender & receiver
-			Object response = fetchBalance(createBalanceRequestObj(transferRequest)); // await response
-
-			return response;
+			// 4. notify user
+			notifyUser();
 
 		} catch (ActivityFailure e) {
 			throw e;
@@ -82,8 +80,8 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 	}
 
 	@Override
-	public Object fetchBalance(BalanceRequest balanceRequest) {
-		return transactionActivity.fetchBalance(balanceRequest);
+	public void notifyUser() {
+		transactionActivity.notifyUser(Workflow.getInfo().getWorkflowId());
 	}
 
 	private ServiceRequest createDebitRequestObj(TransferRequest transferRequest) {
