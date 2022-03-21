@@ -36,13 +36,11 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final ServiceConfig serviceConfig;
     private final RestTemplate restTemplate;
-
     private String notifyEmail;
     private static final String DEFAULT_SUBJECT = "TRANSACTION STATUS";
 
     @Override
     public void processDebit(ServiceRequest debitRequest) {
-
     	DebitResponse response = (DebitResponse) postRequestAndGetData(serviceConfig.getDebit(), debitRequest, DebitResponse.class);
         log.debug(response.toString());
         log.debug("Debit Successful from sender's account");
@@ -90,9 +88,7 @@ public class TransactionServiceImpl implements TransactionService {
        }catch(HttpClientErrorException e) {
     	   if(404==e.getStatusCode().value() && e.getResponseBodyAsString().contains("Account not found")) {
                String errorMessage = "Account : " + creditRequest.getDestinationAccountNumber()+ "  not found";
-               sendPost(serviceConfig.getNotify(),
-                       getNotifiableObj(errorMessage),
-                       String.class);
+               notifyUser(errorMessage);
     		   throw new NoSuchAccountException(errorMessage);
     	   }else {
     		   throw e;
@@ -100,9 +96,7 @@ public class TransactionServiceImpl implements TransactionService {
        }catch(HttpServerErrorException e) {
     	   if(e.getResponseBodyAsString().contains("Insufficient Balance")) {
                String errorMessage = "Insufficient Balance in Account : " + creditRequest.getDestinationAccountNumber();
-               sendPost(serviceConfig.getNotify(),
-                       getNotifiableObj(errorMessage),
-                       String.class);
+               notifyUser(errorMessage);
                throw new TransactionProcessingException(errorMessage);
     	   }else {
     		   throw e;
@@ -192,4 +186,12 @@ public class TransactionServiceImpl implements TransactionService {
     public void setNotifyEmail(String notifyEmail) {
         this.notifyEmail = notifyEmail;
     }
+
+    @Override
+    public void notifyUser(String message) {
+        sendPost(serviceConfig.getNotify(),
+                getNotifiableObj(message),
+                String.class);
+    }
+
 }
