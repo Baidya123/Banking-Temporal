@@ -44,6 +44,10 @@ public interface StandardJsonResponse {
      * @param data the data to set
      */
     void setData(HashMap<String, Object> data);
+    
+    HashMap<String, String> getRecipient();
+
+	void setRecipient(HashMap<String, String> recipient);
 
     
 }
