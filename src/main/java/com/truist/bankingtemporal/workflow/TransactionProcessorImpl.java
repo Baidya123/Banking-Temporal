@@ -35,17 +35,20 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 
 		try {
 			// 1. initiate debit activity
-			initDebit(serviceRequest); // await response
+			initDebit(serviceRequest, transferRequest.getNotifyEmail()); // await response
 
 			/* to invoke debit rollback operation */
-			saga.addCompensation(transactionActivity::debitRollback, rollbackRequest);
+			saga.addCompensation(transactionActivity::debitRollback,
+					rollbackRequest,
+					Workflow.getInfo().getWorkflowId(),
+					transferRequest.getNotifyEmail());
 
 			long tmp = serviceRequest.getSourceAccountNumber();
 			serviceRequest.setSourceAccountNumber(serviceRequest.getDestinationAccountNumber());
 			serviceRequest.setDestinationAccountNumber(tmp);
 
 			// 2. initiate crdeit activity
-			initCredit(serviceRequest); // await response
+			initCredit(serviceRequest, transferRequest.getNotifyEmail()); // await response
 
 		}catch (ActivityFailure e) {
 			saga.compensate();
@@ -53,10 +56,10 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 		}
 		try {
 			// 3. initiate notification activity
-			notifyRecipients(serviceRequest); // pick email ids from DB
+			notifyRecipients(serviceRequest, transferRequest.getNotifyEmail()); // pick email ids from DB
 
 			// 4. notify user
-			notifyUser();
+			notifyUser(transferRequest.getNotifyEmail());
 
 		} catch (ActivityFailure e) {
 			throw e;
@@ -65,23 +68,23 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 	}
 
 	@Override
-	public void initDebit(ServiceRequest debitRequest) {
-		transactionActivity.debitAccount(debitRequest);
+	public void initDebit(ServiceRequest debitRequest, String notifyEmail) {
+		transactionActivity.debitAccount(debitRequest, Workflow.getInfo().getWorkflowId(), notifyEmail);
 	}
 
 	@Override
-	public void initCredit(ServiceRequest creditRequest) {
-		transactionActivity.creditAccount(creditRequest);
+	public void initCredit(ServiceRequest creditRequest, String notifyEmail) {
+		transactionActivity.creditAccount(creditRequest, Workflow.getInfo().getWorkflowId(), notifyEmail);
 	}
 
 	@Override
-	public void notifyRecipients(ServiceRequest transactionRequest) {
-		Workflow.await(() -> notificationActivity.notifyAccounts(transactionRequest));
+	public void notifyRecipients(ServiceRequest transactionRequest, String notifyEmail) {
+		notificationActivity.notifyAccounts(transactionRequest, Workflow.getInfo().getWorkflowId(), notifyEmail);
 	}
 
 	@Override
-	public void notifyUser() {
-		transactionActivity.notifyUser(Workflow.getInfo().getWorkflowId());
+	public void notifyUser(String notifyEmail) {
+		transactionActivity.notifyUser(Workflow.getInfo().getWorkflowId(), notifyEmail);
 	}
 
 	private ServiceRequest createDebitRequestObj(TransferRequest transferRequest) {
@@ -90,15 +93,5 @@ public class TransactionProcessorImpl implements TransactionProcessor, Transacti
 				.amount(transferRequest.getPayment().getAmount()).build();
 	}
 
-	private BalanceRequest createBalanceRequestObj(TransferRequest transferRequest) {
-		BalanceRequest balanceRequest = new BalanceRequest();
-		balanceRequest.setAccountNumbers(new ArrayList(2) {
-			{
-				add(transferRequest.getDebitAccount().getAccountNumber());
-				add(transferRequest.getCreditAccount().getAccountNumber());
-			}
-		});
-		return balanceRequest;
-	}
 
 }

@@ -1,6 +1,5 @@
 package com.truist.bankingtemporal.service;
 
-import java.util.concurrent.CompletableFuture;
 
 import com.truist.bankingtemporal.model.request.MailParam;
 
@@ -16,7 +15,6 @@ import org.springframework.web.client.RestTemplate;
 import com.truist.bankingtemporal.config.ServiceConfig;
 import com.truist.bankingtemporal.exception.NoSuchAccountException;
 import com.truist.bankingtemporal.exception.TransactionProcessingException;
-import com.truist.bankingtemporal.model.BalanceRequest;
 import com.truist.bankingtemporal.model.ServiceRequest;
 import com.truist.bankingtemporal.model.response.CreditResponse;
 import com.truist.bankingtemporal.model.response.DebitResponse;
@@ -36,42 +34,38 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final ServiceConfig serviceConfig;
     private final RestTemplate restTemplate;
-    private String notifyEmail;
     private static final String DEFAULT_SUBJECT = "TRANSACTION STATUS";
 
+
     @Override
-    public void processDebit(ServiceRequest debitRequest) {
-    	DebitResponse response = (DebitResponse) postRequestAndGetData(serviceConfig.getDebit(), debitRequest, DebitResponse.class);
+    public void processDebit(ServiceRequest debitRequest, String workflowId, String notifyEmail) {
+
+        DebitResponse response = (DebitResponse) sendPOST(serviceConfig.getDebit(), debitRequest, DebitResponse.class, workflowId, notifyEmail);
         log.debug(response.toString());
         log.debug("Debit Successful from sender's account");
     }
 
     @Override
-    public void processCredit(ServiceRequest creditRequest) {
+    public void processCredit(ServiceRequest creditRequest, String workflowId, String notifyEmail) {
 
-        CreditResponse response = (CreditResponse) postRequestAndGetData(serviceConfig.getCredit(), creditRequest, CreditResponse.class);
+        CreditResponse response = (CreditResponse) sendPOST(serviceConfig.getCredit(), creditRequest, CreditResponse.class, workflowId, notifyEmail);
         log.debug(response.toString());
         log.debug("Credit Successful to receiver's account");
     }
 
     @Override
-    public void notifyAll(ServiceRequest notifyRequest) {
+    public void notifyAll(ServiceRequest notifyRequest, String workflowId, String notifyEmail) {
     	String sourceURL = serviceConfig.getBalance()+"?accountNo="+notifyRequest.getSourceAccountNumber();
     	log.debug("Source URL "+sourceURL);
-    	ResponseEntity<String> responseSource = getRequestAndGetData(sourceURL, notifyRequest, String.class);
+    	ResponseEntity<String> responseSource = sendGET(sourceURL, workflowId, String.class);
         log.debug(responseSource.toString());
         
         String destinationURL = serviceConfig.getBalance()+"?accountNo="+notifyRequest.getDestinationAccountNumber();
         log.debug("Destination URL "+destinationURL);
-        ResponseEntity<String> responseDestination = getRequestAndGetData(destinationURL, notifyRequest, String.class);
+        ResponseEntity<String> responseDestination = sendGET(sourceURL, workflowId, String.class);
         log.debug(responseDestination.toString());
         log.debug("Notification: Dear Mr.Sender, your account balance is $x");
         log.debug("Notification: Dear Mr.Receiver, your account balance is $x");
-    }
-
-    @Override
-    public CompletableFuture<Object> fetchBalance(BalanceRequest balanceRequest) {
-        return new CompletableFuture<>();
     }
 
     /**
@@ -81,22 +75,26 @@ public class TransactionServiceImpl implements TransactionService {
      * @param responseClass
      * @return
      */
-    private Object postRequestAndGetData(String url, ServiceRequest creditRequest, Class<?> responseClass) {
+    private Object sendPOST(String url, ServiceRequest creditRequest, Class<?> responseClass, String workflowId, String notifyEmail) {
         HttpEntity<ServiceRequest> httpEntity = new HttpEntity<>(creditRequest);
        try {
         return sendPost(url, httpEntity, responseClass);
        }catch(HttpClientErrorException e) {
     	   if(404==e.getStatusCode().value() && e.getResponseBodyAsString().contains("Account not found")) {
-               String errorMessage = "Account : " + creditRequest.getDestinationAccountNumber()+ "  not found";
-               notifyUser(errorMessage);
+               String errorMessage = "Dear User,\nWorkflow ID " +
+                       workflowId + " failed to complete. \n\n" +
+               "Reason: Account number " + creditRequest.getDestinationAccountNumber()+ "  not found";
+               notifyUser(errorMessage, notifyEmail);
     		   throw new NoSuchAccountException(errorMessage);
     	   }else {
     		   throw e;
     	   }
        }catch(HttpServerErrorException e) {
     	   if(e.getResponseBodyAsString().contains("Insufficient Balance")) {
-               String errorMessage = "Insufficient Balance in Account : " + creditRequest.getDestinationAccountNumber();
-               notifyUser(errorMessage);
+               String errorMessage = "Dear User,\nWorkflow ID " +
+                       workflowId + " failed to complete.\n\n" +
+                       "Reason: Insufficient Balance in Account " + creditRequest.getDestinationAccountNumber();
+               notifyUser(errorMessage, notifyEmail);
                throw new TransactionProcessingException(errorMessage);
     	   }else {
     		   throw e;
@@ -121,7 +119,7 @@ public class TransactionServiceImpl implements TransactionService {
      * @param message
      * @return
      */
-    private HttpEntity<MailParam> getNotifiableObj(String message) {
+    private HttpEntity<MailParam> getNotifiableObj(String message, String notifyEmail) {
         return getNotifiableObj(notifyEmail, DEFAULT_SUBJECT, message);
     }
 
@@ -146,11 +144,10 @@ public class TransactionServiceImpl implements TransactionService {
     /**
      * Method to call Notify service
      * @param url
-     * @param creditRequest
      * @param responseClass
      * @return
      */
-    private ResponseEntity<String> getRequestAndGetData(String url, ServiceRequest creditRequest, Class<?> responseClass) {
+    private ResponseEntity<String> sendGET(String url, String workflowId, Class<?> responseClass) {
        
         HttpHeaders headers = new HttpHeaders();
         HttpEntity<ServiceRequest> requestEntity = new HttpEntity<>(null, headers);
@@ -166,8 +163,8 @@ public class TransactionServiceImpl implements TransactionService {
      * To rollback the debited amount incase Credit or Notify service fails to process
      */
 	@Override
-	public boolean processDebitRollback(ServiceRequest debitRequest) {
-		DebitResponse response = (DebitResponse) postRequestAndGetData(serviceConfig.getDebitRollback(), debitRequest, DebitResponse.class);
+	public boolean processDebitRollback(ServiceRequest debitRequest, String workflowId, String notifyEmail) {
+		DebitResponse response = (DebitResponse) sendPOST(serviceConfig.getDebitRollback(), debitRequest, DebitResponse.class, workflowId, notifyEmail);
         log.debug(response.toString());
         boolean flag = false;
         if(response.getMessage().equals("Success")) {
@@ -178,19 +175,11 @@ public class TransactionServiceImpl implements TransactionService {
         return flag;
 	}
 
-    /**
-     * Sets the notifyemail address received from request payload
-     * @param notifyEmail
-     */
     @Override
-    public void setNotifyEmail(String notifyEmail) {
-        this.notifyEmail = notifyEmail;
-    }
+    public void notifyUser(String message, String notifyEmail) {
 
-    @Override
-    public void notifyUser(String message) {
         sendPost(serviceConfig.getNotify(),
-                getNotifiableObj(message),
+                getNotifiableObj(message, notifyEmail),
                 String.class);
     }
 

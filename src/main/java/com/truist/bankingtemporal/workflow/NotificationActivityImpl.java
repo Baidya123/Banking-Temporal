@@ -23,9 +23,9 @@ public class NotificationActivityImpl implements NotificationActivity{
 	private final TransactionService transactionService;
 	
 	@Override
-    public boolean notifyAccounts(ServiceRequest transactionRequest) {
+    public boolean notifyAccounts(ServiceRequest transactionRequest, String workflowId, String notifyEmail) {
         log.debug(NOTIFY_STATUS);
-        transactionService.notifyAll(transactionRequest);
+        transactionService.notifyAll(transactionRequest, workflowId, notifyEmail);
         return true;
     }
 
