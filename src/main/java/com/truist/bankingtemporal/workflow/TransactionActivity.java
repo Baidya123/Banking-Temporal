@@ -25,7 +25,7 @@ public interface TransactionActivity {
 	@ActivityMethod
     void creditAccount(ServiceRequest creditRequest);
 	@ActivityMethod
-    boolean fetchBalance(BalanceRequest balanceRequest);
+    void notifyUser(String workflowId);
 	@ActivityMethod
     boolean debitRollback(ServiceRequest debitRollbackRequest);
 }

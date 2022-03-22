@@ -2,6 +2,8 @@ package com.truist.bankingtemporal.service;
 
 import java.util.concurrent.CompletableFuture;
 
+import com.truist.bankingtemporal.model.request.MailParam;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -34,10 +36,11 @@ public class TransactionServiceImpl implements TransactionService {
 
     private final ServiceConfig serviceConfig;
     private final RestTemplate restTemplate;
+    private String notifyEmail;
+    private static final String DEFAULT_SUBJECT = "TRANSACTION STATUS";
 
     @Override
     public void processDebit(ServiceRequest debitRequest) {
-
     	DebitResponse response = (DebitResponse) postRequestAndGetData(serviceConfig.getDebit(), debitRequest, DebitResponse.class);
         log.debug(response.toString());
         log.debug("Debit Successful from sender's account");
@@ -53,14 +56,14 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public void notifyAll(ServiceRequest notifyRequest) {
-    	String sourceURL = serviceConfig.getNotify()+"?accountNo="+notifyRequest.getSourceAccountNumber();
+    	String sourceURL = serviceConfig.getBalance()+"?accountNo="+notifyRequest.getSourceAccountNumber();
     	log.debug("Source URL "+sourceURL);
     	ResponseEntity<String> responseSource = getRequestAndGetData(sourceURL, notifyRequest, String.class);
         log.debug(responseSource.toString());
         
-        String destinationURL = serviceConfig.getNotify()+"?accountNo="+notifyRequest.getDestinationAccountNumber();
+        String destinationURL = serviceConfig.getBalance()+"?accountNo="+notifyRequest.getDestinationAccountNumber();
         log.debug("Destination URL "+destinationURL);
-        ResponseEntity<String> responseDestination = getRequestAndGetData(sourceURL, notifyRequest, String.class);
+        ResponseEntity<String> responseDestination = getRequestAndGetData(destinationURL, notifyRequest, String.class);
         log.debug(responseDestination.toString());
         log.debug("Notification: Dear Mr.Sender, your account balance is $x");
         log.debug("Notification: Dear Mr.Receiver, your account balance is $x");
@@ -81,20 +84,61 @@ public class TransactionServiceImpl implements TransactionService {
     private Object postRequestAndGetData(String url, ServiceRequest creditRequest, Class<?> responseClass) {
         HttpEntity<ServiceRequest> httpEntity = new HttpEntity<>(creditRequest);
        try {
-        return restTemplate.exchange(url, HttpMethod.POST, httpEntity, responseClass).getBody();
+        return sendPost(url, httpEntity, responseClass);
        }catch(HttpClientErrorException e) {
     	   if(404==e.getStatusCode().value() && e.getResponseBodyAsString().contains("Account not found")) {
-    		   throw new NoSuchAccountException("Account :" + creditRequest.getDestinationAccountNumber()+ "  not found");
+               String errorMessage = "Account : " + creditRequest.getDestinationAccountNumber()+ "  not found";
+               notifyUser(errorMessage);
+    		   throw new NoSuchAccountException(errorMessage);
     	   }else {
     		   throw e;
     	   }
        }catch(HttpServerErrorException e) {
     	   if(e.getResponseBodyAsString().contains("Insufficient Balance")) {
-    		   throw new TransactionProcessingException("Insufficient Balance in Account : "+ creditRequest.getDestinationAccountNumber());
+               String errorMessage = "Insufficient Balance in Account : " + creditRequest.getDestinationAccountNumber();
+               notifyUser(errorMessage);
+               throw new TransactionProcessingException(errorMessage);
     	   }else {
     		   throw e;
     	   }
        }
+    }
+
+
+    /**
+     * Sends a http post request
+     * @param url
+     * @param httpEntity
+     * @param responseClass
+     * @return
+     */
+    private Object sendPost(String url, HttpEntity<?> httpEntity, Class<?> responseClass) {
+        return restTemplate.exchange(url, HttpMethod.POST, httpEntity, responseClass).getBody();
+    }
+
+    /**
+     * Returns an object required to send an error report by email
+     * @param message
+     * @return
+     */
+    private HttpEntity<MailParam> getNotifiableObj(String message) {
+        return getNotifiableObj(notifyEmail, DEFAULT_SUBJECT, message);
+    }
+
+    /**
+     * Returns an object required to send an error report by email
+     * @param to
+     * @param subject
+     * @param message
+     * @return
+     */
+    private HttpEntity<MailParam> getNotifiableObj(String to, String subject, String message) {
+        MailParam mailParam = MailParam.builder()
+                .to(to)
+                .subject(subject)
+                .message(message)
+                .build();
+        return new HttpEntity<>(mailParam);
     }
     
     
@@ -133,4 +177,21 @@ public class TransactionServiceImpl implements TransactionService {
         
         return flag;
 	}
+
+    /**
+     * Sets the notifyemail address received from request payload
+     * @param notifyEmail
+     */
+    @Override
+    public void setNotifyEmail(String notifyEmail) {
+        this.notifyEmail = notifyEmail;
+    }
+
+    @Override
+    public void notifyUser(String message) {
+        sendPost(serviceConfig.getNotify(),
+                getNotifiableObj(message),
+                String.class);
+    }
+
 }

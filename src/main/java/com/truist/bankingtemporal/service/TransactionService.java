@@ -11,4 +11,6 @@ public interface TransactionService {
     void notifyAll(ServiceRequest transactionRequest);
     CompletableFuture<Object> fetchBalance(BalanceRequest balanceRequest);
     boolean processDebitRollback(ServiceRequest debitRequest);
+    void setNotifyEmail(String notifyEmail);
+    void notifyUser(String message);
 }
