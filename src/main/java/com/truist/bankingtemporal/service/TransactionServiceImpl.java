@@ -62,7 +62,7 @@ public class TransactionServiceImpl implements TransactionService {
         
         String destinationURL = serviceConfig.getBalance()+"?accountNo="+notifyRequest.getDestinationAccountNumber();
         log.debug("Destination URL "+destinationURL);
-        ResponseEntity<String> responseDestination = sendGET(sourceURL, workflowId, String.class);
+        ResponseEntity<String> responseDestination = sendGET(destinationURL, workflowId, String.class);
         log.debug(responseDestination.toString());
         log.debug("Notification: Dear Mr.Sender, your account balance is $x");
         log.debug("Notification: Dear Mr.Receiver, your account balance is $x");
@@ -171,7 +171,10 @@ public class TransactionServiceImpl implements TransactionService {
         	flag=true;
         }
         log.debug("Debited Amount is Successfully rollbacked to sender's account");
-        
+        String errorMessage = "Dear User,\nWorkflow ID " +
+                workflowId + " failed to complete. \n\n" +
+        "Reason: Credit Service is Unavailable !! Debited Amount has been rolled backed to Account Number : "+debitRequest.getDestinationAccountNumber();      
+        notifyUser(errorMessage, notifyEmail);
         return flag;
 	}
 
