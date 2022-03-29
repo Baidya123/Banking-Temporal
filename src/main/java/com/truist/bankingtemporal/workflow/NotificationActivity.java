@@ -16,6 +16,6 @@ import io.temporal.activity.ActivityInterface;
  */
 @ActivityInterface
 public interface NotificationActivity {
-	boolean notifyAccounts(ServiceRequest transactionRequest);
+	boolean notifyAccounts(ServiceRequest transactionRequest, String workflowId, String notifyEmail);
 
 }

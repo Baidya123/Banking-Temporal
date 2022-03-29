@@ -6,11 +6,9 @@ import com.truist.bankingtemporal.model.BalanceRequest;
 import com.truist.bankingtemporal.model.ServiceRequest;
 
 public interface TransactionService {
-    void processDebit(ServiceRequest debitRequest);
-    void processCredit(ServiceRequest creditRequest);
-    void notifyAll(ServiceRequest transactionRequest);
-    CompletableFuture<Object> fetchBalance(BalanceRequest balanceRequest);
-    boolean processDebitRollback(ServiceRequest debitRequest);
-    void setNotifyEmail(String notifyEmail);
-    void notifyUser(String message);
+    void processDebit(ServiceRequest debitRequest, String workflowId, String notifyEmail);
+    void processCredit(ServiceRequest creditRequest, String workflowId, String notifyEmail);
+    void notifyAll(ServiceRequest transactionRequest, String workflowId, String notifyEmail);
+    boolean processDebitRollback(ServiceRequest debitRequest, String workflowId, String notifyEmail);
+    void notifyUser(String message, String notifyEmail);
 }

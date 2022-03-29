@@ -26,27 +26,27 @@ public class TransactionActivityImpl implements TransactionActivity {
 	private final TransactionService transactionService;
 
 	@Override
-	public void debitAccount(ServiceRequest debitRequest) {
+	public void debitAccount(ServiceRequest debitRequest, String workflowId, String notifyEmail) {
 		log.debug(DEBIT_STATUS);
-		transactionService.processDebit(debitRequest);
+		transactionService.processDebit(debitRequest, workflowId, notifyEmail);
 
 	}
 
 	@Override
-	public void creditAccount(ServiceRequest creditRequest) {
+	public void creditAccount(ServiceRequest creditRequest, String workflowId, String notifyEmail) {
 		log.debug(CREDIT_STATUS);
-		transactionService.processCredit(creditRequest);
+		transactionService.processCredit(creditRequest, workflowId, notifyEmail);
 	}
 
 	@Override
-	public void notifyUser(String workflowId) {
+	public void notifyUser(String workflowId, String notifyEmail) {
 		log.debug(NOTIFY_STATUS);
-		transactionService.notifyUser("Dear User, Workflow ID " + workflowId + " has been successfully completed.");
+		transactionService.notifyUser("Dear User,\nWorkflow ID " + workflowId + " has been successfully completed.", notifyEmail);
 	}
 
 	@Override
-	public boolean debitRollback(ServiceRequest debitRollbackRequest) {
+	public boolean debitRollback(ServiceRequest debitRollbackRequest, String workflowId, String notifyEmail) {
 		log.debug(DEBIT_ROLLBACK_STATUS);
-		return transactionService.processDebitRollback(debitRollbackRequest);
+		return transactionService.processDebitRollback(debitRollbackRequest, workflowId, notifyEmail);
 	}
 }

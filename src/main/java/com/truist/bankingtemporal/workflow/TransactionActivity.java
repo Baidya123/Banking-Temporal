@@ -21,11 +21,11 @@ public interface TransactionActivity {
 	
 	/* activity methods which can be called during workflow execution */
 	@ActivityMethod
-    void debitAccount(ServiceRequest debitRequest);
+    void debitAccount(ServiceRequest debitRequest, String workflowId, String notifyEmail);
 	@ActivityMethod
-    void creditAccount(ServiceRequest creditRequest);
+    void creditAccount(ServiceRequest creditRequest, String workflowId, String notifyEmail);
 	@ActivityMethod
-    void notifyUser(String workflowId);
+    void notifyUser(String workflowId, String notifyEmail);
 	@ActivityMethod
-    boolean debitRollback(ServiceRequest debitRollbackRequest);
+    boolean debitRollback(ServiceRequest debitRollbackRequest, String workflowId, String notifyEmail);
 }
